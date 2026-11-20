@@ -98,7 +98,7 @@ export default function About() {
     <>
       {/* INTRODUCTION */}
       <header className="wrap pb-24 pt-32 lg:pt-44">
-        <Label className="text-blue">About Roam Edit</Label>
+       <Label className="text-blue">About Sammy Iria's Blog</Label>
 
         <div className="mt-8">
           <Manifesto />
@@ -263,7 +263,7 @@ export default function About() {
 
       {/* OUR STORY */}
       <section className="wrap py-28 lg:py-36">
-        <Label className="text-blue">The Roam Edit story</Label>
+        <Label className="text-blue">Sammy Iria's Blog story</Label>
 
         <h2 className="display mt-5 max-w-3xl text-[clamp(2.8rem,6vw,5.5rem)]">
           A little curiosity can take you <em>anywhere.</em>
@@ -296,7 +296,7 @@ export default function About() {
 
           <div className="md:col-span-4 md:text-right">
             <TextLink to="/contact">
-              Write for Roam Edit
+              Write for Sammy Iria's Blog
             </TextLink>
           </div>
         </div>

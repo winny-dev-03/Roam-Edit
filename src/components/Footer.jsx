@@ -1,4 +1,3 @@
-// src/components/Footer.jsx
 import { Link } from "react-router";
 import { NAV } from "../data/content.js";
 import { Label } from "./Ui.jsx";
@@ -24,7 +23,7 @@ export default function Footer() {
               <li key={l.to}><Link to={l.to} className="link-u pb-0.5">{l.label}</Link></li>
             ))}
             <li><Link to="/contact" className="link-u pb-0.5">Contact</Link></li>
-          </ul>
+          </ul>e3
         </nav>
         <div className="lg:col-span-2">
           <Label className="text-blue">Follow</Label>
@@ -44,12 +43,12 @@ export default function Footer() {
       </div>
 
       <div className="wrap flex flex-col justify-between gap-2 border-t border-ice/15 py-6 text-ice/50 sm:flex-row">
-        <Label>© {new Date().getFullYear()} Roam Edit</Label>
+       <Label>© {new Date().getFullYear()} Sammy Iria's Blog</Label>
         <Label>Privacy · Terms · Advertise</Label>
       </div>
 
       <p aria-hidden="true" className="display pointer-events-none select-none whitespace-nowrap text-center text-[23vw] leading-[0.72] text-blue/20">
-        Roam<em>Edit</em>
+        Sammy Iria's<em>Blog</em>
       </p>
     </footer>
   );

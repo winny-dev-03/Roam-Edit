@@ -37,7 +37,7 @@ function Stamp({ className = "" }) {
             textLength="470"
             lengthAdjust="spacing"
           >
-            ROAM EDIT • FIELD-TESTED • NO BUCKET LISTS •
+            SAMMY IRIA'S BLOG • STORIES • IDEAS •
           </textPath>
         </text>
       </g>
@@ -288,13 +288,13 @@ export default function Home() {
             </p>
 
             <p className="mt-6 max-w-xl text-lg leading-[1.75] text-navy/75">
-              Roam Edit is for the curious traveller. We tell stories,
+             Sammy Iria's Blog is for the curious traveller. We tell stories,
               explore cultures, find useful tools and look at the world
               from a different angle.
             </p>
 
             <div className="mt-8 flex items-center gap-8">
-              <p className="display text-3xl italic">The Roam Edit Team</p>
+           <p className="display text-3xl italic">Sammy Iria</p>
               <TextLink to="/about">Our manifesto</TextLink>
             </div>
           </Reveal>
@@ -753,7 +753,7 @@ export default function Home() {
       <section id="letter" className="wrap pb-32 pt-32 lg:pb-44 lg:pt-40">
         <div className="grid items-center gap-16 lg:grid-cols-12">
           <div className="lg:col-span-6">
-            <Label className="text-blue">The Roam Edit newsletter</Label>
+            <Label className="text-blue">Sammy Iria's Blog newsletter</Label>
 
             <h2 className="display mt-5 text-[clamp(3.2rem,9vw,8.5rem)] leading-[0.98]">
               Mail that

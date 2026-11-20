@@ -15,7 +15,7 @@ function Hero() {
         {/* Navigation */}
         <nav className="flex items-center justify-between">
           <a href="/" className="text-2xl font-bold tracking-tight">
-            Roam Edit<span className="text-[#8DB4D6]">.</span>
+            Sammy Iria Blog<span className="text-[#8DB4D6]">.</span>
           </a>
 
           <div className="hidden items-center gap-9 text-sm md:flex">

@@ -86,7 +86,7 @@ function SearchResults() {
       <section className="bg-[#172B3A] px-6 pb-20 pt-36 text-white md:px-12">
         <div className="mx-auto max-w-7xl">
           <p className="mb-5 text-xs font-semibold tracking-[0.3em] text-[#A9C3D8]">
-            EXPLORE ROAM EDIT
+            EXPLORE Sammy Iria's Blog
           </p>
 
           <h1 className="mb-6 text-4xl font-semibold md:text-6xl">

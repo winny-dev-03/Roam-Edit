@@ -7,7 +7,7 @@ import { Arrow, Label } from "./Ui.jsx";
 export function Wordmark({ className = "" }) {
   return (
     <span className={`display inline-flex items-baseline gap-[0.18em] text-[1.9rem] leading-none ${className}`}>
-      Roam<em className="italic">Edit</em>
+    Sammy Iria's <em className="italic">Blog</em>
       <span className="mb-[0.1em] inline-block h-1.5 w-1.5 rounded-full bg-blue" />
     </span>
   );
@@ -67,7 +67,7 @@ export default function Navbar() {
       {/* Bar */}
       <div className={`relative z-10 transition-colors duration-500 ${solid ? "border-b border-navy/10 bg-ice/95" : "border-b border-transparent"} ${ink}`}>
         <div className="wrap flex h-16 items-center justify-between lg:h-20">
-          <Link to="/" aria-label="Roam Edit home"><Wordmark /></Link>
+          <Link to="/" aria-label="Sammy Iria's Blog home"><Wordmark /></Link>
 
           <nav className="hidden items-center gap-9 lg:flex" aria-label="Primary">
             {NAV.map((l) => (
@@ -113,7 +113,7 @@ export default function Navbar() {
         className={`fixed inset-x-0 top-0 bg-white pb-12 pt-28 text-navy transition-transform duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] ${search ? "translate-y-0" : "-translate-y-full"}`}
       >
         <form onSubmit={submit} className="wrap">
-          <Label className="text-blue">Search Roam Edit</Label>
+          <Label className="text-blue">Search Sammy Iria's Blog</Label>
           <div className="mt-4 flex items-end gap-4 border-b border-navy">
             <input
               autoFocus={search}
