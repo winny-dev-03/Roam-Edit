@@ -1,55 +1,60 @@
-import { Link } from "react-router";
-import { NAV } from "../data/content.js";
-import { Label } from "./Ui.jsx";
-
-const SOCIAL = ["Instagram", "X", "YouTube", "LinkedIn"];
+// src/components/Footer.jsx
+import { Link } from 'react-router-dom';
+import { nav, moreNav, socials, sammy } from '../data/site';
+import { socialIcons } from './Icons';
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-navy text-ice">
-      <div className="wrap grid gap-14 pb-10 pt-24 lg:grid-cols-12">
-        <div className="lg:col-span-6">
-          <p className="display max-w-lg text-[clamp(2.2rem,4.5vw,3.8rem)]">
-            Travel writing for people who <em>look twice.</em>
-          </p>
-          <p className="mt-6 max-w-sm text-sm leading-relaxed text-ice/60">
-            An independent magazine about African places, culture and the technology reshaping how we move through them.
-          </p>
+    <footer className="bg-navy text-paper">
+      <div className="mx-auto grid max-w-[1400px] gap-12 px-4 pb-10 pt-16 md:grid-cols-12 md:px-10 md:pt-24">
+        <div className="md:col-span-5">
+          <p className="font-display text-4xl font-semibold tracking-[-0.03em]">Sammy Iria</p>
+          <p className="mt-4 max-w-sm font-display text-xl font-light italic leading-snug text-paper/80">"{sammy.quote}"</p>
+          <Link to="/contact" state={{ scrollTo: 'advertise' }}
+            className="mt-8 inline-block rounded-full border border-paper/40 px-6 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition hover:bg-paper hover:text-navy">
+            Advertising enquiries
+          </Link>
         </div>
-        <nav className="lg:col-span-2 lg:col-start-8" aria-label="Footer">
-          <Label className="text-blue">Explore</Label>
-          <ul className="mt-5 space-y-3 text-sm">
-            {NAV.map((l) => (
-              <li key={l.to}><Link to={l.to} className="link-u pb-0.5">{l.label}</Link></li>
-            ))}
-            <li><Link to="/contact" className="link-u pb-0.5">Contact</Link></li>
-          </ul>e3
-        </nav>
-        <div className="lg:col-span-2">
-          <Label className="text-blue">Follow</Label>
-          <ul className="mt-5 space-y-3 text-sm">
-            {SOCIAL.map((s) => (
-              <li key={s}><a href="#" className="link-u pb-0.5">{s}</a></li>
-            ))}
-          </ul>
-        </div>
-        <div className="lg:col-span-2">
-          <Label className="text-blue">Write to us</Label>
-          <ul className="mt-5 space-y-3 text-sm text-ice/80">
-            <li>editor@roamedit.com</li>
-            <li>Lagos · Nairobi · Cape Town</li>
-          </ul>
+
+        <div className="grid grid-cols-2 gap-10 md:col-span-7 md:grid-cols-3">
+          <div>
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-ice">Read</p>
+            <ul className="space-y-2 text-sm">
+              {[...nav.filter((n) => n.to !== '/'), ...moreNav].map((n) => (
+                <li key={n.to}><Link to={n.to} className="link-u">{n.label}</Link></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-ice">Elsewhere</p>
+            <ul className="space-y-2 text-sm">
+              {socials.map((s) => {
+                const Icon = socialIcons[s.key];
+                return (
+                  <li key={s.key}>
+                    <a href={s.href} onClick={s.placeholder ? (e) => e.preventDefault() : undefined}
+                      title={s.placeholder ? 'Placeholder link' : s.label}
+                      className="link-u inline-flex items-center gap-2">
+                      <Icon className="h-4 w-4" /> {s.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          <div className="col-span-2 md:col-span-1">
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-ice">About</p>
+            <p className="text-sm leading-relaxed text-paper/70">
+              An independent blog and news digest with Sammy Iria's voice at the centre. Stories marked "Sample" are placeholder content.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="wrap flex flex-col justify-between gap-2 border-t border-ice/15 py-6 text-ice/50 sm:flex-row">
-       <Label>© {new Date().getFullYear()} Sammy Iria's Blog</Label>
-        <Label>Privacy · Terms · Advertise</Label>
+      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-2 border-t border-paper/15 px-4 py-6 font-mono text-[11px] uppercase tracking-widest text-paper/50 md:px-10">
+        <span>© {new Date().getFullYear()} Sammy Iria</span>
+        <span>Written, edited and opinionated</span>
       </div>
-
-      <p aria-hidden="true" className="display pointer-events-none select-none whitespace-nowrap text-center text-[23vw] leading-[0.72] text-blue/20">
-        Sammy Iria's<em>Blog</em>
-      </p>
     </footer>
   );
 }

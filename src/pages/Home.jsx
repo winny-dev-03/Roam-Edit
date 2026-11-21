@@ -1,848 +1,351 @@
-
 // src/pages/Home.jsx
-import { useRef, useState } from "react";
-import { Link } from "react-router";
-import {
-  ARTICLES,
-  AUTHORS,
-  DESTINATIONS,
-  GUIDES,
-  STATS,
-  fmtDate,
-  pad,
-} from "../data/content.js";
-import Img from "../components/Img.jsx";
-import Scene from "../components/Scene.jsx";
-import Reveal from "../components/Reveal.jsx";
-import { Arrow, CountUp, Label, TextLink } from "../components/Ui.jsx";
+import { Link } from 'react-router-dom';
+import Hero from '../components/Hero';
+import Reveal from '../components/Reveal';
+import SmartImage from '../components/SmartImage';
+import SectionHead from '../components/SectionHead';
+import Ticker from '../components/Ticker';
+import Newsletter from '../components/NewsLetter';
+import UpcomingEvents from '../components/UpcomingEvents';
+import ShareMenu from '../components/ShareMenu';
+import { PhotoArea, StoryCard, StoryLine, StoryBrief, StoryMosaic, StoryFooter, Label, href } from '../components/Stories';
+import TimeAgo from '../components/TimeAgo';
+import { Arrow } from '../components/Icons';
+import { useStories } from '../context/StoriesContext';
+import { bySlug, inSection, latest, bySammy, mostLiked, mostDiscussed } from '../lib/selectors';
+import { sammy, discoverMore, socials, img } from '../data/site';
+import { socialIcons } from '../components/Icons';
 
-function Stamp({ className = "" }) {
+const wrap = 'mx-auto max-w-[1400px] px-4 md:px-10';
+const TONES = {
+  paper: 'bg-paper text-navy',
+  warm: 'bg-warm text-navy',
+  paper2: 'bg-paper-2 text-navy',
+  navy: 'bg-navy text-paper',
+};
+const Band = ({ tone = 'paper', children, id }) => (
+  <section id={id} className={`${TONES[tone]} py-16 md:py-24`}>
+    <div className={wrap}>{children}</div>
+  </section>
+);
+
+/* 3. Main editorial hero */
+function EditorialHero({ hero, top }) {
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return (
-    <svg viewBox="0 0 200 200" className={className} aria-hidden="true">
-      <circle cx="100" cy="100" r="100" fill="#F3F7FA" />
-      <g className="origin-center animate-turn">
-        <defs>
-          <path
-            id="stamp-path"
-            d="M100,100 m-76,0 a76,76 0 1,1 152,0 a76,76 0 1,1 -152,0"
-          />
-        </defs>
-        <text
-          fill="#172B3A"
-          fontFamily="DM Mono, monospace"
-          fontSize="12"
-        >
-          <textPath
-            href="#stamp-path"
-            textLength="470"
-            lengthAdjust="spacing"
-          >
-            SAMMY IRIA'S BLOG • STORIES • IDEAS •
-          </textPath>
-        </text>
-      </g>
-      <circle cx="100" cy="100" r="42" fill="#172B3A" />
-      <path
-        d="M100 68 L106 94 L132 100 L106 106 L100 132 L94 106 L68 100 L94 94 Z"
-        fill="#7799B5"
-      />
-    </svg>
-  );
-}
-
-function Ticket({ g, offset = "" }) {
-  if (!g) return null;
-
-  return (
-    <Reveal className={offset}>
-      <Link to="/guides" className="group relative block bg-white">
-        <Img
-          kind={g.kind}
-          seed={g.seed}
-          alt={g.title}
-          className="aspect-[4/3]"
-        />
-
-        <div className="relative px-6 pb-7 pt-8">
-          <span className="absolute -left-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-ice" />
-          <span className="absolute -right-3 top-0 h-6 w-6 -translate-y-1/2 rounded-full bg-ice" />
-          <span className="absolute inset-x-5 top-0 border-t border-dashed border-navy/25" />
-
-          <Label className="text-blue">
-            {g.type} · {g.time}
-          </Label>
-
-          <h3 className="display mt-3 text-[2rem]">{g.title}</h3>
-
-          <p className="mt-3 text-sm leading-relaxed text-navy/65">
-            {g.desc}
-          </p>
-
-          <span className="mt-6 flex items-center justify-between border-t border-navy/10 pt-4 text-sm font-semibold">
-            {g.level}
-            <Arrow className="transition-transform duration-300 group-hover:translate-x-1.5" />
-          </span>
-        </div>
-      </Link>
-    </Reveal>
-  );
-}
-
-function ArticleMeta({ article }) {
-  const author = AUTHORS[article.author];
-
-  return (
-    <p className="mt-3 text-xs uppercase tracking-[0.13em] text-navy/50">
-      {article.category}
-      {author?.name ? ` · ${author.name}` : ""}
-      {article.read ? ` · ${article.read} min read` : ""}
-    </p>
-  );
-}
-
-export default function Home() {
-  const rail = useRef(null);
-  const [hover, setHover] = useState(ARTICLES[0]?.slug);
-  const [form, setForm] = useState({ name: "", email: "" });
-  const [sent, setSent] = useState(false);
-
-  const cover = ARTICLES[0];
-  const preview = ARTICLES.find((a) => a.slug === hover) || cover;
-
-  const stories = ARTICLES.slice(0, 7);
-  const tech = ARTICLES.filter((a) => a.category === "Technology");
-  const journal = ARTICLES.filter((a) => a.category !== "Technology").slice(2, 5);
-  const featuredStories = ARTICLES.slice(0, 4);
-  const destinations = DESTINATIONS.slice(0, 6);
-
-  const scrollRail = (dir) => {
-    rail.current?.scrollBy({
-      left: dir * 400,
-      behavior: "smooth",
-    });
-  };
-
-  return (
-    <>
-      {/* HERO */}
-      <section className="relative">
-        <div className="relative min-h-[100svh] overflow-hidden bg-navy text-ice">
-          <Img
-            src="/images/Hello.jpg"
-            kind="dunes"
-            seed={7}
-            alt="A dramatic landscape at first light"
-            eager
-            className="absolute inset-0 animate-drift"
-          />
-
-          <div className="absolute inset-0 bg-linear-to-b from-navy/60 via-navy/5 to-navy/80" />
-
-          <div className="wrap relative flex min-h-[100svh] flex-col justify-between pb-24 pt-28 lg:pb-36">
-            <div className="flex justify-between text-ice/80">
-              <Label>Issue 07 · The Art of Getting Lost</Label>
-              <Label className="hidden sm:block">
-                A magazine for the curious
-              </Label>
-            </div>
-
-            <div>
-              <Label className="mb-6 block text-ice/75">
-                Travel differently. See more.
-              </Label>
-
-              <h1 className="display text-[clamp(3.8rem,13.5vw,12.5rem)]">
-                Go where
-                <br />
-                <em>the map</em>{" "}
-                <span className="whitespace-nowrap">goes quiet.</span>
-              </h1>
-
-              <p className="mt-8 max-w-md text-lg leading-relaxed text-ice/85">
-                Stories, places and ideas for people who want to experience
-                more of the world — one thoughtful journey at a time.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/destinations"
-                  className="bg-ice px-7 py-3.5 text-sm font-semibold text-navy transition-colors hover:bg-white"
-                >
-                  Explore the world
-                </Link>
-
-                <Link
-                  to="/stories"
-                  className="border border-ice/60 px-7 py-3.5 text-sm font-semibold transition-colors hover:bg-ice hover:text-navy"
-                >
-                  Read our stories
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 rotate-90 lg:block">
-            <Label className="text-ice/70">Scroll ↓</Label>
-          </div>
+  <section id="stories" className="scroll-mt-4 bg-paper pb-14 pt-6 md:pb-20 md:pt-10">
+      <div className={wrap}>
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-2 border-y border-navy py-2 font-mono text-[11px] uppercase tracking-[0.2em]">
+          <span>Today's front page</span>
+          <span className="hidden sm:inline">Sammy Iria · writer &amp; editor</span>
+          <span>{today}</span>
         </div>
 
-        {/* FEATURED STORY */}
-        {cover && (
-          <Link
-            to={`/stories/${cover.slug}`}
-            className="group relative z-10 mx-5 -mt-20 block bg-white p-5 shadow-[0_40px_70px_-35px_rgba(23,43,58,0.5)] transition-shadow duration-500 hover:shadow-[0_40px_80px_-30px_rgba(23,43,58,0.6)] sm:mx-8 lg:absolute lg:bottom-0 lg:right-14 lg:mx-0 lg:mt-0 lg:w-[27rem] lg:translate-y-1/2"
-          >
-            <div className="relative overflow-hidden">
-              <Img
-                kind={cover.kind}
-                seed={cover.seed}
-                src="/images/Slow-T.jpg"
-                alt={cover.title}
-                className="aspect-[16/9] transition-transform duration-700 group-hover:scale-[1.03]"
-              />
-
-              <span className="absolute left-4 top-4 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-navy">
-                Editor's pick
-              </span>
+        <div className="grid gap-10 lg:grid-cols-12">
+          <article className="story lg:col-span-8">
+            <div className="mb-4 flex items-center gap-4">
+              <Label category={hero.category} />
+              {hero.verified && (
+                <span className="font-mono text-[10px] uppercase tracking-widest text-navy/55">Source: {hero.source?.name}</span>
+              )}
             </div>
-
-            <Label className="mt-5 block text-blue">
-              {cover.category} · {cover.read} min read
-            </Label>
-
-            <h2 className="display mt-3 text-[2.1rem] leading-tight">
-              {cover.title}
-            </h2>
-
-            <p className="mt-3 text-sm leading-relaxed text-navy/65">
-              {cover.excerpt || "A story worth taking your time over."}
-            </p>
-
-            <span className="mt-5 flex items-center justify-between border-t border-navy/10 pt-4 text-sm font-semibold">
-              Explore the story
-              <Arrow className="transition-transform duration-300 group-hover:translate-x-1.5" />
-            </span>
-          </Link>
-        )}
-      </section>
-
-      {/* DESTINATION MARQUEE */}
-      <div className="mt-14 overflow-hidden border-y border-navy/15 py-5 lg:mt-52">
-        <div className="flex w-max animate-marquee gap-12">
-          {[...DESTINATIONS, ...DESTINATIONS].map((d, i) => (
-            <Link
-              key={`${d.slug}-${i}`}
-              to={`/destinations/${d.slug}`}
-              className="flex items-center gap-5 whitespace-nowrap"
-            >
-              <span className="display text-4xl transition-colors hover:text-blue">
-                {d.name}
-              </span>
-              <Label className="text-blue">
-                {d.country}
-              </Label>
-              <span className="text-blue">✦</span>
+            <h1 className="rise font-display text-[length:clamp(2.5rem,6vw,5.4rem)] font-semibold leading-[0.97] tracking-[-0.035em]">
+              <Link to={href(hero)} className="transition-colors hover:text-blue">{hero.title}</Link>
+            </h1>
+            <p className="rise mt-5 max-w-3xl text-lg text-navy/75 md:text-xl" style={{ animationDelay: '120ms' }}>{hero.dek}</p>
+            <Link to={href(hero)} className="rise mt-7 block" style={{ animationDelay: '220ms' }} aria-label={`Open: ${hero.title}`}>
+              <PhotoArea images={hero.images} ratio="16/10" priority />
             </Link>
-          ))}
+            <div className="mt-6 flex flex-col items-start gap-2.5">
+              <Link to={href(hero)} className="link-u inline-flex items-center gap-2 font-mono text-xs font-medium uppercase tracking-[0.2em]">
+                Read more <Arrow className="h-3.5 w-3.5" />
+              </Link>
+          <ShareMenu post={hero} up={false} />
+            </div>
+            <StoryFooter story={hero} />
+          </article>
+
+          <aside className="lg:col-span-4 lg:border-l lg:border-navy/20 lg:pl-8">
+            <p className="mb-2 border-b-[3px] border-navy pb-2 font-mono text-[11px] uppercase tracking-[0.2em]">Top stories</p>
+            {top.map((s) => <StoryBrief key={s.slug} story={s} />)}
+
+            <div className="mt-8 border border-navy/20 bg-warm p-5">
+              <div className="flex items-center gap-4">
+                <SmartImage src={img(sammy.portrait, 300)} alt="Sammy Iria" className="h-16 w-16 shrink-0 rounded-full" />
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-navy/55">Your host</p>
+                  <p className="font-display text-xl font-semibold">Sammy Iria</p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-navy/75">{sammy.bio[0]}</p>
+              <a href="#sammy" className="link-u mt-4 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em]">
+                Latest thoughts <Arrow className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </aside>
         </div>
       </div>
+    </section>
+  );
+}
 
-      {/* EDITOR'S LETTER */}
-      <section className="wrap pb-10 pt-28 lg:pt-40">
-        <div className="grid items-center gap-20 lg:grid-cols-12">
-          <Reveal className="relative lg:col-span-5">
-            <Img
-              kind="peaks"
-              seed={11}
-             src="/images/Editors-pick.jpg"
-              alt="A mountain ridge at dawn"
-              className="aspect-[4/5] w-[86%]"
-            />
+/* Lifestyle & Sports duo */
+function Duo({ lifestyle, sports }) {
+  const col = (title, to, list) => (
+    <div>
+      <div className="mb-6 flex items-end justify-between border-t-[3px] border-navy pt-3">
+        <h3 className="font-display text-3xl font-semibold tracking-[-0.02em] md:text-4xl">{title}</h3>
+        <Link to={to} className="link-u inline-flex items-center gap-2 text-sm font-semibold">See all <Arrow className="h-4 w-4" /></Link>
+      </div>
+      {list[0] && <Reveal><StoryCard story={list[0]} variant="standard" /></Reveal>}
+      <div className="mt-8">
+        {list.slice(1, 3).map((s) => (<Reveal key={s.slug}><StoryLine story={s} /></Reveal>))}
+      </div>
+    </div>
+  );
+  return (
+    <div className="grid gap-14 lg:grid-cols-2 lg:gap-0">
+      <div className="lg:border-r lg:border-navy/20 lg:pr-10">{col('Lifestyle', '/lifestyle', lifestyle)}</div>
+      <div className="lg:pl-10">{col('Sports', '/sports', sports)}</div>
+    </div>
+  );
+}
 
-            <Img
-              kind="coast"
-              seed={4}
-              src="/images/Sub-EP.jpg"
-              alt="A quiet coastline"
-              className="absolute -bottom-12 right-0 aspect-[4/3] w-[56%] border-[10px] border-ice"
-            />
+/* 10. Discover More */
+function DiscoverMore() {
+  return (
+   <Band tone="paper2" id="destinations">
+      <Reveal className="mb-12 grid items-end gap-6 border-t-[3px] border-navy pt-4 md:mb-16 lg:grid-cols-12">
+        <h2 className="font-display text-[length:clamp(3rem,9vw,8rem)] font-semibold uppercase leading-[0.88] tracking-[-0.04em] lg:col-span-8">
+          Discover<br /><span className="font-light italic normal-case">more.</span>
+        </h2>
+        <p className="max-w-sm text-lg text-navy/75 lg:col-span-4">
+          Wander off the front page. Every corner of the blog has its own stories, photographs and opinions.
+        </p>
+      </Reveal>
 
-            <Stamp className="absolute -top-8 right-2 h-28 w-28 lg:-right-4 lg:h-36 lg:w-36" />
+      <div className="grid gap-x-6 gap-y-14 md:grid-cols-3">
+        {discoverMore.map((d, i) => (
+          <Reveal key={d.key} delay={(i % 3) * 100} className={i % 3 === 1 ? 'md:mt-16' : ''}>
+            <Link to={d.to} className="story group block">
+              <div className="relative">
+                <SmartImage src={img(d.photo, 1000)} alt={d.title} ratio={d.ratio} />
+                <span className="absolute left-3 top-3 bg-paper px-2 py-1 font-mono text-[11px] text-navy">{String(i + 1).padStart(2, '0')}</span>
+              </div>
+              <h3 className="mt-4 font-display text-3xl font-semibold leading-[1.05] tracking-[-0.025em] transition-colors group-hover:text-blue">{d.title}</h3>
+              <p className="mt-2 max-w-sm text-navy/70">{d.blurb}</p>
+              <span className="link-u mt-3 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em]">
+                Explore <Arrow className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+          </Reveal>
+        ))}
+      </div>
+    </Band>
+  );
+}
+
+/* 11. Sammy's latest thoughts */
+function SammySection({ posts }) {
+  const [lead, ...rest] = posts;
+  return (
+    <section id="sammy" className="scroll-mt-16 bg-navy py-16 text-paper md:py-24">
+      <div className={wrap}>
+        <SectionHead dark kicker="Opinions · essays · personal posts" title="Sammy's latest thoughts" />
+        <div className="grid gap-12 lg:grid-cols-12">
+          <Reveal className="lg:col-span-4">
+            <SmartImage src={img(sammy.portrait, 1000)} alt="Portrait of Sammy Iria" ratio="4/5" />
+            <p className="mt-5 font-display text-2xl italic leading-snug">"{sammy.quote}"</p>
+            <p className="mt-3 text-sm leading-relaxed text-paper/75">{sammy.bio[1]}</p>
+            <ul className="mt-5 flex flex-wrap gap-2" aria-label="Sammy on social media (placeholders)">
+              {socials.map((s) => {
+                const Icon = socialIcons[s.key];
+                return (
+                  <li key={s.key}>
+                    <a href={s.href} onClick={s.placeholder ? (e) => e.preventDefault() : undefined}
+                      title={s.placeholder ? `${s.label}: placeholder handle` : s.label}
+                      className="inline-flex items-center gap-2 rounded-full border border-paper/30 px-3.5 py-2 text-xs font-semibold transition hover:bg-paper hover:text-navy">
+                      <Icon className="h-4 w-4" /> {s.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
           </Reveal>
 
-          <Reveal
-            className="lg:col-span-6 lg:col-start-7"
-            delay={120}
-          >
-            <Label className="text-blue">A note from the editor</Label>
+          <div className="lg:col-span-4">{lead && <Reveal><StoryCard story={lead} variant="standard" dark ratio="4/5" /></Reveal>}</div>
 
-            <h2 className="display mt-5 text-[clamp(2.8rem,6vw,5.6rem)]">
-              We don't do <em>bucket lists.</em>
-            </h2>
-
-            <p className="drop-cap mt-8 max-w-xl text-lg leading-[1.75] text-navy/75">
-              The world is too interesting to be reduced to a checklist.
-              There are places that stay with you, conversations that change
-              your perspective and little discoveries that never make it
-              into a travel guide.
-            </p>
-
-            <p className="mt-6 max-w-xl text-lg leading-[1.75] text-navy/75">
-             Sammy Iria's Blog is for the curious traveller. We tell stories,
-              explore cultures, find useful tools and look at the world
-              from a different angle.
-            </p>
-
-            <div className="mt-8 flex items-center gap-8">
-           <p className="display text-3xl italic">Sammy Iria</p>
-              <TextLink to="/about">Our manifesto</TextLink>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* STORIES FROM EVERYWHERE */}
-      <section className="relative overflow-hidden pb-32 pt-32 lg:pt-44">
-        <div className="wrap">
-          <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <Label className="text-blue">Stories from everywhere</Label>
-              <h2 className="display mt-4 max-w-3xl text-[clamp(3rem,7vw,6.8rem)]">
-                The world has
-                <br />
-                <em>a story to tell.</em>
-              </h2>
-            </div>
-
-            <TextLink to="/stories">Explore all stories</TextLink>
-          </div>
-
-          {featuredStories.length > 0 && (
-            <div className="grid gap-12 lg:grid-cols-12">
-              {/* MAIN FEATURE */}
-              <Reveal className="group lg:col-span-7">
-                <Link to={`/stories/${featuredStories[0].slug}`}>
-                  <div className="relative overflow-hidden">
-                    <Img
-                      kind={featuredStories[0].kind}
-                      seed={featuredStories[0].seed}
-                      src={featuredStories[0].image}
-                      alt={featuredStories[0].title}
-                      className="aspect-[5/4] transition-transform duration-1000 group-hover:scale-[1.035]"
-                    />
-
-                    <span className="absolute bottom-5 left-5 bg-ice px-4 py-2">
-                      <Label className="text-navy">Featured story</Label>
-                    </span>
-                  </div>
-
-                  <ArticleMeta article={featuredStories[0]} />
-
-                  <h3 className="display mt-4 max-w-3xl text-[clamp(2.5rem,5vw,4.8rem)] leading-[1.05] transition-colors group-hover:text-blue">
-                    {featuredStories[0].title}
+          <div className="lg:col-span-4">
+            <p className="mb-1 border-b border-paper/25 pb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-ice">Recent posts</p>
+            {rest.map((s) => (
+              <Reveal key={s.slug}>
+                <article className="border-b border-paper/20 py-5">
+                  <Label category={s.category} />
+                  <h3 className="mt-1.5">
+                    <Link to={href(s)} className="font-display text-xl font-semibold leading-snug transition-colors hover:text-ice">{s.title}</Link>
                   </h3>
+                  <p className="mt-1.5 text-xs text-paper/65"><TimeAgo story={s} className="font-semibold" /> · {s.likes} likes · {s.comments.length} comments</p>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-                  <p className="mt-4 max-w-xl text-base leading-relaxed text-navy/65">
-                    {featuredStories[0].excerpt ||
-                      "A closer look at the places, people and experiences shaping the way we see the world."}
-                  </p>
-
-                  <span className="mt-6 inline-flex items-center gap-4 text-sm font-semibold">
-                    Read the story
-                    <Arrow className="transition-transform duration-300 group-hover:translate-x-1.5" />
+/* 12. Popular stories */
+function Popular({ liked, talked }) {
+  return (
+    <Band tone="warm">
+      <div className="grid gap-16 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <SectionHead kicker="Most read" title="Popular stories" />
+          <ol>
+            {liked.map((s, i) => (
+              <Reveal key={s.slug} as="li" delay={i * 60}>
+                <Link to={href(s)} className="group flex items-center gap-4 border-t border-navy/20 py-5 md:gap-6">
+                  <span className="w-12 shrink-0 font-display text-5xl font-light italic text-navy/25 transition-colors group-hover:text-blue md:w-16 md:text-6xl">{i + 1}</span>
+                  <span className="min-w-0 flex-1">
+                    <Label category={s.category} />
+                    <span className="mt-1 block font-display text-xl font-semibold leading-snug md:text-2xl">{s.title}</span>
+                    <span className="mt-1 block text-xs text-navy/55"><TimeAgo story={s} className="font-semibold" /> · {s.likes} likes</span>
                   </span>
+                  <SmartImage src={img(s.images[0].key || 'news', 400)} alt="" ratio="1/1" className="hidden h-20 w-20 shrink-0 sm:block" />
                 </Link>
               </Reveal>
-
-              {/* SMALLER STORIES */}
-              <div className="flex flex-col justify-between gap-10 lg:col-span-5">
-                {featuredStories.slice(1, 4).map((a, i) => (
-                  <Reveal key={a.slug} delay={i * 100}>
-                    <Link
-                      to={`/stories/${a.slug}`}
-                      className="group grid grid-cols-[7.5rem_1fr] gap-5 border-b border-navy/15 pb-8 sm:grid-cols-[10rem_1fr]"
-                    >
-                      <Img
-                        kind={a.kind}
-                        seed={a.seed}
-                        src={a.image}
-                        alt={a.title}
-                        className="aspect-[4/5]"
-                      />
-
-                      <div className="py-1">
-                        <Label className="text-blue">{a.category}</Label>
-
-                        <h3 className="display mt-3 text-[1.65rem] leading-tight transition-colors group-hover:text-blue sm:text-[2rem]">
-                          {a.title}
-                        </h3>
-
-                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-navy/60">
-                          {a.excerpt || "A new perspective worth discovering."}
-                        </p>
-
-                        <span className="mt-5 inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-wider">
-                          Read story <Arrow />
-                        </span>
-                      </div>
-                    </Link>
-                  </Reveal>
-                ))}
-              </div>
-            </div>
-          )}
+            ))}
+          </ol>
         </div>
-      </section>
 
-      {/* THE WORLD, WAITING */}
-      <section className="cut-top relative bg-white pb-28 pt-32 lg:pb-40 lg:pt-44">
-        <div className="wrap">
-          <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <Label className="text-blue">The world, waiting</Label>
-              <h2 className="display mt-4 text-[clamp(3rem,7vw,6.5rem)]">
-                Somewhere
-                <br />
-                <em>out there.</em>
-              </h2>
-            </div>
-
-            <div className="max-w-xs">
-              <p className="text-base leading-relaxed text-navy/65">
-                From familiar streets to faraway landscapes, find a place
-                that makes you want to pack a bag.
-              </p>
-              <div className="mt-5">
-                <TextLink to="/destinations">All destinations</TextLink>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-12">
-            {destinations.slice(0, 4).map((d, i) => (
-              <Reveal
-                key={d.slug}
-                className={`group relative ${
-                  i === 0
-                    ? "md:col-span-7"
-                    : i === 1
-                      ? "md:col-span-5 md:mt-20"
-                      : i === 2
-                        ? "md:col-span-5"
-                        : "md:col-span-7 md:-mt-16"
-                }`}
-              >
-                <Link
-                  to={`/destinations/${d.slug}`}
-                  className="relative block overflow-hidden"
-                >
-                  <Img
-                    kind={d.kind}
-                    seed={d.seed}
-                    src={d.image}
-                    alt={d.name}
-                    className={`${
-                      i === 0 || i === 3
-                        ? "aspect-[5/4]"
-                        : "aspect-[4/5]"
-                    } transition-transform duration-1000 group-hover:scale-[1.04]`}
-                  />
-
-                  <div className="absolute inset-0 bg-linear-to-t from-navy/80 via-navy/5 to-transparent" />
-
-                  <div className="absolute inset-x-0 bottom-0 p-6 text-ice sm:p-9">
-                    <Label className="text-ice/75">
-                      {d.region} · {d.country}
-                    </Label>
-
-                    <h3 className="display mt-2 text-[clamp(2.5rem,5vw,5rem)] leading-none">
-                      {d.name}
-                    </h3>
-
-                    <p className="mt-4 max-w-sm text-sm leading-relaxed text-ice/75">
-                      {d.tagline || d.blurb}
-                    </p>
-
-                    <span className="mt-6 flex items-center justify-between border-t border-ice/30 pt-4 text-sm font-semibold">
-                      Discover this place
-                      <Arrow className="transition-transform duration-300 group-hover:translate-x-1.5" />
-                    </span>
-                  </div>
+        <div className="lg:col-span-5">
+          <SectionHead kicker="Popular discussions" title="People are talking" />
+          <div className="space-y-8">
+            {talked.map((s, i) => (
+              <Reveal key={s.slug} delay={i * 100}>
+                <Link to={`${href(s)}#comments`} className="group block border-l-[3px] border-navy pl-5">
+                  <p className="font-display text-xl italic leading-snug md:text-2xl">"{s.comments[0].text}"</p>
+                  <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-navy/60">{s.comments[0].name} · on {s.title}</p>
+                  <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold transition-colors group-hover:text-blue">
+                    Join {s.comments.length} comments <Arrow className="h-4 w-4" />
+                  </p>
                 </Link>
               </Reveal>
             ))}
           </div>
         </div>
-      </section>
+      </div>
+    </Band>
+  );
+}
 
-      {/* DESTINATION RAIL */}
-      <section className="pb-20 pt-28 lg:pt-36">
-        <div className="wrap mb-12 flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <Label className="text-blue">Keep wandering</Label>
-            <h2 className="display mt-4 text-[clamp(2.8rem,7vw,5.5rem)]">
-              More places.
-              <br />
-              <em>More possibilities.</em>
-            </h2>
-          </div>
+export default function Home() {
+  const { stories } = useStories();
+  const hero = bySlug(stories, 'atikus-court-setback-and-apcs-divided-loyalty') || latest(stories, 1)[0];
+  if (!hero) return null;
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => scrollRail(-1)}
-              aria-label="Previous destinations"
-              className="flex h-12 w-12 items-center justify-center border border-navy/30 transition-colors hover:bg-navy hover:text-ice"
-            >
-              <Arrow className="rotate-180" />
-            </button>
+  const top = latest(stories, 7).filter((s) => s.slug !== hero.slug).slice(0, 5);
+  const nigeria = inSection(stories, 'nigeria');
+  const world = inSection(stories, 'world');
+  const politics = inSection(stories, 'politics').filter((s) => s.slug !== hero.slug);
+  const entertainment = inSection(stories, 'entertainment');
+  const events = inSection(stories, 'events');
+  const lifestyle = inSection(stories, 'lifestyle');
+  const sports = inSection(stories, 'sports');
 
-            <button
-              onClick={() => scrollRail(1)}
-              aria-label="Next destinations"
-              className="flex h-12 w-12 items-center justify-center border border-navy/30 transition-colors hover:bg-navy hover:text-ice"
-            >
-              <Arrow />
-            </button>
-          </div>
-        </div>
+  const [ng1, ng2, ng3, ...ngRest] = nigeria;
+  const [w1, w2, ...wRest] = world;
+  const [e1, e2, e3, ...eRest] = entertainment;
 
-        <div
-          ref={rail}
-          className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-16 sm:px-8 lg:px-14"
-        >
-          {DESTINATIONS.map((d, i) => (
-            <Link
-              key={d.slug}
-              to={`/destinations/${d.slug}`}
-              className={`group relative block w-[78vw] max-w-[24rem] shrink-0 snap-start sm:w-[24rem] ${
-                i % 2 ? "mt-14" : ""
-              }`}
-            >
-              <Img
-                kind={d.kind}
-                seed={d.seed}
-                src={d.image}
-                alt={d.name}
-                className="aspect-[3/4]"
-              />
-
-              <div className="absolute inset-0 bg-linear-to-t from-navy/80 via-transparent to-transparent" />
-
-              <div className="absolute inset-x-0 bottom-0 p-6 text-ice">
-                <Label className="text-ice/70">
-                  {pad(i + 1)} · {d.country}
-                </Label>
-
-                <h3 className="display mt-2 text-[3.4rem]">{d.name}</h3>
-
-                <span className="mt-4 block h-px w-10 bg-ice/70 transition-all duration-500 group-hover:w-24" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* TRAVEL, MADE SMARTER */}
-      <section className="relative overflow-hidden bg-navy py-28 text-ice lg:py-40">
-        <div className="wrap">
-          <div className="grid items-center gap-16 lg:grid-cols-12">
-            <Reveal className="relative z-10 lg:col-span-7">
-              <Label className="text-blue">Travel, made smarter · The Signal</Label>
-
-              <h2 className="display mt-5 text-[clamp(3rem,7vw,6.5rem)] leading-[1.05]">
-                A little tech.
-                <br />
-                <em>A lot more world.</em>
-              </h2>
-
-              <p className="mt-7 max-w-xl text-lg leading-relaxed text-ice/70">
-                The apps, tools and clever ideas making modern travel easier.
-                From staying connected abroad to finding your way around a
-                new city, we've got the useful details covered.
-              </p>
-
-              <div className="mt-12 grid grid-cols-2 gap-x-8 gap-y-8 border-t border-ice/20 pt-8 sm:grid-cols-4">
-                {STATS.map((s) => (
-                  <div key={s.l}>
-                    <p className="display text-5xl">
-                      <CountUp to={s.n} suffix={s.s} />
-                    </p>
-                    <Label className="mt-2 block text-ice/55">{s.l}</Label>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-12">
-                <TextLink to="/technology">Explore travel technology</TextLink>
-              </div>
-            </Reveal>
-
-            <Reveal
-              delay={150}
-              className="relative lg:col-span-5"
-            >
-              <Img
-                kind="city"
-                seed={19}
-                src="/images/tech-home.jpg"
-                alt="A city skyline at dusk"
-                className="aspect-[4/5] border-[10px] border-ice/10"
-              />
-
-              <div className="absolute -bottom-8 -left-8 max-w-[17rem] bg-ice p-6 text-navy sm:-left-16">
-                <Label className="text-blue">The travel toolkit</Label>
-                <p className="display mt-3 text-3xl">
-                  Better tools. Better journeys.
-                </p>
-                <span className="mt-5 block">
-                  <Arrow />
-                </span>
-              </div>
-            </Reveal>
-          </div>
-
-          {/* TECHNOLOGY STORIES */}
-          {tech.length > 0 && (
-            <div className="mt-32 border-t border-ice/20 pt-10">
-              <div className="mb-8 flex items-center justify-between">
-                <Label className="text-blue">The latest signals</Label>
-                <TextLink to="/technology">All technology</TextLink>
-              </div>
-
-              <div className="grid gap-8 md:grid-cols-3">
-                {tech.slice(0, 3).map((a) => (
-                  <Link
-                    key={a.slug}
-                    to={`/stories/${a.slug}`}
-                    className="group border-b border-ice/20 pb-7"
-                  >
-                    <Label className="text-blue">{a.topic || a.category}</Label>
-
-                    <h3 className="display mt-4 text-3xl leading-tight transition-colors group-hover:text-blue">
-                      {a.title}
-                    </h3>
-
-                    <p className="mt-4 text-sm leading-relaxed text-ice/60">
-                      {a.excerpt || "Useful ideas for the modern traveller."}
-                    </p>
-
-                    <span className="mt-7 flex items-center justify-between text-sm font-semibold">
-                      Read more
-                      <Arrow className="transition-transform duration-300 group-hover:translate-x-1.5" />
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* THE TRAVEL GUIDEBOOK */}
-      <section className="wrap py-32 lg:py-44">
-        <div className="mb-16 flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <Label className="text-blue">The travel guidebook</Label>
-
-            <h2 className="display mt-4 text-[clamp(2.8rem,7vw,6.5rem)]">
-              Know before
-              <br />
-              <em>you go.</em>
-            </h2>
-          </div>
-
-          <div className="max-w-xs">
-            <p className="text-base leading-relaxed text-navy/65">
-              Practical advice for making every trip smoother, from planning
-              your budget to finding somewhere worth staying.
-            </p>
-            <div className="mt-5">
-              <TextLink to="/guides">Browse all guides</TextLink>
-            </div>
+return (
+  <>
+    <Hero />
+    <EditorialHero hero={hero} top={top} />
+    <Ticker stories={latest(stories, 8)} />
+      {/* 5. Top Nigerian stories */}
+      <Band tone="warm">
+        <SectionHead kicker="Top Nigerian stories" title="At home" action={{ to: '/nigerian-news', label: 'All Nigerian news' }} />
+        <div className="grid gap-10 lg:grid-cols-12">
+          {ng1 && <Reveal className="lg:col-span-7"><StoryCard story={ng1} variant="feature" /></Reveal>}
+          <div className="space-y-10 lg:col-span-5 lg:border-l lg:border-navy/15 lg:pl-8">
+            {[ng2, ng3].filter(Boolean).map((s, i) => (<Reveal key={s.slug} delay={i * 100}><StoryCard story={s} variant="compact" /></Reveal>))}
           </div>
         </div>
-
-        <div className="grid gap-10 md:grid-cols-3">
-          <Ticket g={GUIDES[0]} />
-          <Ticket g={GUIDES[1]} offset="md:mt-20" />
-          <Ticket g={GUIDES[3]} offset="md:mt-8" />
-        </div>
-      </section>
-
-      {/* THE TRAVEL JOURNAL */}
-      <section className="relative overflow-hidden bg-white py-28 lg:py-40">
-        <div className="wrap">
-          <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <Label className="text-blue">The travel journal</Label>
-
-              <h2 className="display mt-4 text-[clamp(3rem,7vw,6.5rem)]">
-                Notes from
-                <br />
-                <em>the road.</em>
-              </h2>
-            </div>
-
-            <p className="max-w-xs text-base leading-relaxed text-navy/65">
-              The little moments, unexpected encounters and personal
-              discoveries that make a journey unforgettable.
-            </p>
+        {ngRest.length > 0 && (
+          <div className="mt-14 grid gap-10 border-t border-navy/20 pt-10 md:grid-cols-3">
+            {ngRest.slice(0, 3).map((s, i) => (
+              <Reveal key={s.slug} delay={i * 100} className={i === 1 ? 'md:mt-10' : ''}>
+                <StoryCard story={s} variant="standard" ratio={i === 1 ? '4/5' : '3/2'} />
+              </Reveal>
+            ))}
           </div>
+        )}
+      </Band>
 
-          {journal.length > 0 && (
-            <div className="grid gap-8 md:grid-cols-12">
-              {journal.map((a, i) => (
-                <Reveal
-                  key={a.slug}
-                  className={`group ${
-                    i === 0
-                      ? "md:col-span-6"
-                      : "md:col-span-3 md:mt-20"
-                  }`}
-                >
-                  <Link to={`/stories/${a.slug}`}>
-                    <div className="relative overflow-hidden">
-                      <Img
-                        kind={a.kind}
-                        seed={a.seed}
-                        src={a.image}
-                        alt={a.title}
-                        className={`${
-                          i === 0 ? "aspect-[4/5]" : "aspect-[3/4]"
-                        } transition-transform duration-1000 group-hover:scale-[1.04]`}
-                      />
+      {/* 6. International */}
+      <Band tone="paper">
+        <SectionHead kicker="International" title="Around the world" action={{ to: '/world-news', label: 'All world news' }} />
+        <div className="grid gap-10 lg:grid-cols-12">
+          {w1 && <Reveal className="lg:col-span-7"><StoryCard story={w1} variant="feature" /></Reveal>}
+          {w2 && <Reveal delay={120} className="lg:col-span-5"><StoryCard story={w2} variant="standard" ratio="4/5" /></Reveal>}
+        </div>
+        {wRest.length > 0 && (
+          <div className="mt-14 grid gap-10 border-t border-navy/20 pt-10 sm:grid-cols-2 lg:grid-cols-3">
+            {wRest.slice(0, 3).map((s, i) => (<Reveal key={s.slug} delay={i * 80}><StoryCard story={s} variant="compact" /></Reveal>))}
+          </div>
+        )}
+      </Band>
 
-                      <span className="absolute left-4 top-4 bg-ice px-3 py-2">
-                        <Label className="text-navy">
-                          Field note {pad(i + 1)}
-                        </Label>
-                      </span>
-                    </div>
-
-                    <ArticleMeta article={a} />
-
-                    <h3
-                      className={`display mt-4 leading-tight transition-colors group-hover:text-blue ${
-                        i === 0 ? "text-4xl sm:text-5xl" : "text-2xl sm:text-3xl"
-                      }`}
-                    >
-                      {a.title}
-                    </h3>
-
-                    <p className="mt-3 text-sm leading-relaxed text-navy/60">
-                      {a.excerpt || "A personal story from somewhere in the world."}
-                    </p>
-
-                    <span className="mt-5 inline-flex items-center gap-3 text-sm font-semibold">
-                      Read the journal
-                      <Arrow className="transition-transform duration-300 group-hover:translate-x-1.5" />
-                    </span>
-                  </Link>
-                </Reveal>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-16 border-t border-navy/15 pt-8 text-center">
-            <TextLink to="/stories">More stories from the road</TextLink>
+      {/* 7. Politics (selected dark section) */}
+      <Band tone="navy">
+        <SectionHead dark kicker="Politics & current affairs" title="The political desk" action={{ to: '/politics', label: 'All politics' }} />
+        <div className="grid gap-12 lg:grid-cols-12">
+          {politics[0] && <Reveal className="lg:col-span-7"><StoryCard story={politics[0]} variant="feature" dark /></Reveal>}
+          <div className="lg:col-span-5 lg:border-l lg:border-paper/20 lg:pl-8">
+            {politics.slice(1, 5).map((s, i) => (<Reveal key={s.slug}><StoryLine story={s} index={i} dark /></Reveal>))}
           </div>
         </div>
-      </section>
+      </Band>
 
-      {/* NEWSLETTER */}
-      <section id="letter" className="wrap pb-32 pt-32 lg:pb-44 lg:pt-40">
-        <div className="grid items-center gap-16 lg:grid-cols-12">
-          <div className="lg:col-span-6">
-            <Label className="text-blue">Sammy Iria's Blog newsletter</Label>
-
-            <h2 className="display mt-5 text-[clamp(3.2rem,9vw,8.5rem)] leading-[0.98]">
-              Mail that
-              <br />
-              <em>moves</em> you.
-            </h2>
-
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-navy/70">
-              A little inspiration for your inbox. Discover new places,
-              thoughtful travel stories and useful tools worth knowing about.
-            </p>
-
-            <div className="mt-10 flex items-center gap-4">
-              <span className="h-px w-12 bg-blue" />
-              <Label className="text-blue">A thoughtful read, not more noise</Label>
-            </div>
-          </div>
-
-          <div className="relative lg:col-span-5 lg:col-start-8">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (form.email.includes("@")) setSent(true);
-              }}
-              className="relative -rotate-1 bg-white p-8 shadow-[0_40px_70px_-40px_rgba(23,43,58,0.5)] sm:p-10"
-            >
-              <div className="absolute right-6 top-6 h-24 w-[4.5rem] border border-dashed border-blue p-1.5">
-                <Scene kind="coast" seed={8} className="h-full w-full" />
-              </div>
-
-              {sent ? (
-                <div className="py-10">
-                  <p className="display text-5xl italic">Postmarked.</p>
-                  <p className="mt-4 text-navy/70">
-                    Welcome aboard, {form.name || "traveller"}. Keep an eye
-                    on your inbox.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <Label className="text-blue">A little something for you</Label>
-
-                  <p className="display mt-3 text-3xl italic">
-                    Dear curious traveller,
-                  </p>
-
-                  <p className="mt-4 max-w-xs text-sm leading-relaxed text-navy/60">
-                    Leave us your details and we'll send a little inspiration
-                    your way.
-                  </p>
-
-                  <div className="mt-10 space-y-3 pr-4">
-                    <input
-                      className="field"
-                      placeholder="Your name"
-                      aria-label="Your name"
-                      value={form.name}
-                      onChange={(e) =>
-                        setForm({ ...form, name: e.target.value })
-                      }
-                    />
-
-                    <input
-                      className="field"
-                      type="email"
-                      required
-                      placeholder="Your email"
-                      aria-label="Your email"
-                      value={form.email}
-                      onChange={(e) =>
-                        setForm({ ...form, email: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <button className="mt-8 flex w-full items-center justify-between bg-navy px-6 py-4 text-sm font-semibold text-ice transition-colors hover:bg-blue">
-                    Count me in
-                    <Arrow />
-                  </button>
-
-                  <p className="mt-4 text-center text-[11px] text-navy/45">
-                    No spam. Just good things to read.
-                  </p>
-                </>
-              )}
-            </form>
+      {/* 8. Entertainment */}
+      <Band tone="paper2">
+        <SectionHead kicker="Music · film · pop culture" title="Entertainment" action={{ to: '/entertainment', label: 'All entertainment' }} />
+        <div className="grid gap-10 lg:grid-cols-12">
+          {e1 && <Reveal className="lg:col-span-6"><StoryCard story={e1} variant="feature" ratio="1/1" /></Reveal>}
+          <div className="grid gap-10 sm:grid-cols-2 lg:col-span-6">
+            {[e2, e3].filter(Boolean).map((s, i) => (
+              <Reveal key={s.slug} delay={i * 100} className={i === 1 ? 'sm:mt-12' : ''}>
+                <StoryCard story={s} variant="compact" ratio={i === 1 ? '4/5' : '4/3'} />
+              </Reveal>
+            ))}
           </div>
         </div>
-      </section>
+        {eRest.length > 0 && (
+          <div className="mt-12 grid gap-x-10 md:grid-cols-3">
+            {eRest.slice(0, 3).map((s) => (<Reveal key={s.slug}><StoryLine story={s} /></Reveal>))}
+          </div>
+        )}
+      </Band>
+
+      {/* 9. Events around Nigeria and the world */}
+      <Band tone="warm">
+        <SectionHead kicker="Around Nigeria and the world" title="Events" action={{ to: '/events', label: 'All events' }} />
+        <UpcomingEvents limit={4} />
+        <div className="mt-14 border-t border-navy/20 pt-12">
+          <StoryMosaic stories={events} short />
+        </div>
+      </Band>
+
+      {/* Lifestyle & Sports */}
+      <Band tone="paper">
+        <Duo lifestyle={lifestyle} sports={sports} />
+      </Band>
+
+      <DiscoverMore />
+      <SammySection posts={bySammy(stories, 4)} />
+      <Popular liked={mostLiked(stories, 6)} talked={mostDiscussed(stories, 3)} />
+      <Newsletter />
     </>
   );
 }

@@ -1,105 +1,136 @@
 // src/pages/Contact.jsx
-import { useEffect, useState } from "react";
-import { Arrow, Chip, Label } from "../components/Ui.jsx";
-import Scene from "../components/Scene.jsx";
+import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import SmartImage from '../components/SmartImage';
+import { Check, ArrowUpRight, socialIcons } from '../components/Icons';
+import { sendMessage } from '../lib/api';
+import { site, socials, sammy, img } from '../data/site';
 
-const DESKS = [
-  { city: "Lagos", tz: "Africa/Lagos", lat: "6.52° N", note: "Editorial & partnerships" },
-  { city: "Nairobi", tz: "Africa/Nairobi", lat: "1.29° S", note: "Technology desk" },
-  { city: "Cape Town", tz: "Africa/Johannesburg", lat: "33.92° S", note: "Photography & travel" },
-];
-const TOPICS = ["Pitch a story", "Partnerships", "Press", "Say hello"];
-
-function useNow() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return now;
-}
+const topics = ['Say hello', 'Advertising', 'Story tip', 'Collaborate', 'Press'];
 
 export default function Contact() {
-  const now = useNow();
-  const [topic, setTopic] = useState(TOPICS[0]);
-  const [f, setF] = useState({ name: "", email: "", message: "" });
-  const [err, setErr] = useState({});
-  const [sent, setSent] = useState(false);
+  const { state } = useLocation();
+  const [form, setForm] = useState({
+    name: '', email: '', message: '',
+    topic: state?.scrollTo === 'advertise' ? 'Advertising' : topics[0],
+  });
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState('idle');
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const validate = () => {
-    const e = {};
-    if (!f.name.trim()) e.name = "Tell us who you are.";
-    if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = "That email doesn't look right.";
-    if (f.message.trim().length < 10) e.message = "A sentence or two, at least.";
-    setErr(e);
-    return Object.keys(e).length === 0;
-  };
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (validate()) setSent(true); // TODO: connect to your email or form provider.
+    const errs = {};
+    if (form.name.trim().length < 2) errs.name = 'Please tell me your name.';
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errs.email = 'That email address looks off.';
+    if (form.message.trim().length < 10) errs.message = 'Write a little more (at least 10 characters).';
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
+    setStatus('busy');
+    await sendMessage({ ...form });
+    setStatus('done');
   };
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-  const time = (tz) => new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: tz }).format(now);
+
+  const field = 'w-full border-b-2 border-navy/30 bg-transparent py-3 text-base outline-none transition focus:border-navy';
+  const label = 'mb-1 block font-mono text-[11px] uppercase tracking-widest text-navy/60';
 
   return (
-    <section className="wrap pb-28 pt-32 lg:pt-40">
-      <div className="grid gap-16 lg:grid-cols-12">
-        {/* Left: desks */}
-        <div className="lg:col-span-6">
-          <Label className="text-blue">Contact</Label>
-          <h1 className="display mt-5 text-[clamp(4rem,12vw,11rem)]">Say <em>hello.</em></h1>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-navy/70">Pitches, partnerships, corrections and compliments all land with a real person on one of our three desks.</p>
+    <div className="grid lg:grid-cols-2">
+      <section className="border-b border-navy/20 bg-paper px-4 py-12 md:px-10 lg:border-b-0 lg:border-r lg:py-20">
+        <div className="mx-auto max-w-lg">
+          <p className="rise mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-navy/65">
+            <span className="h-3 w-[3px] bg-blue" /> Contact
+          </p>
+          <h1 className="rise font-display text-[length:clamp(3.4rem,9vw,7rem)] font-semibold leading-[0.9] tracking-[-0.04em]" style={{ animationDelay: '100ms' }}>
+            Say <span className="font-light italic">hello.</span>
+          </h1>
 
-          <ul className="mt-14 border-t border-navy">
-            {DESKS.map((d) => (
-              <li key={d.city} className="grid grid-cols-[1fr_auto] items-end gap-4 border-b border-navy/15 py-6">
-                <div>
-                  <p className="display text-4xl">{d.city}</p>
-                  <Label className="mt-2 block text-navy/55">{d.note} · {d.lat}</Label>
-                </div>
-                <p className="font-mono text-2xl tabular-nums" aria-label={`Local time in ${d.city}`}>{time(d.tz)}</p>
-              </li>
-            ))}
+          <div className="rise mt-8 flex items-center gap-4" style={{ animationDelay: '200ms' }}>
+            <SmartImage src={img(sammy.portrait, 300)} alt="Sammy Iria" className="h-16 w-16 shrink-0 rounded-full" />
+            <p className="font-display text-xl italic">Sammy here.</p>
+          </div>
+          <p className="rise mt-5 text-lg leading-relaxed text-navy/80" style={{ animationDelay: '280ms' }}>
+            Got a story tip, an event I should cover, or a strong opinion about something I wrote? I read every message and reply to as many as I can.
+          </p>
+          <p className="rise mt-5" style={{ animationDelay: '340ms' }}>
+            <a href={`mailto:${site.email}`} className="link-u font-display text-2xl">{site.email}</a>
+          </p>
+
+          <ul className="mt-8 grid grid-cols-2 gap-3">
+            {socials.map((s) => {
+              const Icon = socialIcons[s.key];
+              return (
+                <li key={s.key}>
+                  <a href={s.href} onClick={s.placeholder ? (e) => e.preventDefault() : undefined}
+                    title={s.placeholder ? 'Placeholder: add Sammy\'s real link' : s.label}
+                    className="flex items-center justify-between gap-2 border border-navy/25 px-4 py-3 text-sm font-semibold transition hover:bg-navy hover:text-paper">
+                    <span className="inline-flex items-center gap-2"><Icon className="h-4 w-4" />{s.label}</span>
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-navy/45">{s.handle}</p>
+                </li>
+              );
+            })}
           </ul>
-          <p className="mt-8 text-sm text-navy/60">editor@roamedit.com</p>
-        </div>
 
-        {/* Right: form */}
-        <div className="lg:col-span-5 lg:col-start-8">
-          <div className="relative bg-white p-8 shadow-[0_40px_70px_-40px_rgba(23,43,58,0.5)] sm:p-10 lg:mt-24">
-            {sent ? (
-              <div className="py-10">
-                <div className="h-28 w-20 border border-dashed border-blue p-1.5"><Scene kind="coast" seed={12} className="h-full w-full" /></div>
-                <p className="display mt-8 text-6xl italic">Sent.</p>
-                <p className="mt-4 max-w-xs text-navy/70">Thank you, {f.name.split(" ")[0]}. We reply to every message within three working days.</p>
-                <button onClick={() => { setSent(false); setF({ name: "", email: "", message: "" }); }} className="mt-8 text-sm font-semibold underline underline-offset-4">Send another</button>
-              </div>
-            ) : (
-              <form onSubmit={submit} noValidate>
-                <Label className="text-blue">I'd like to</Label>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {TOPICS.map((t) => <Chip key={t} active={topic === t} onClick={() => setTopic(t)}>{t}</Chip>)}
-                </div>
-                <div className="mt-8 space-y-2">
-                  {[["name", "Your name", "text"], ["email", "Your email", "email"]].map(([k, ph, type]) => (
-                    <div key={k}>
-                      <input className="field" type={type} placeholder={ph} aria-label={ph} aria-invalid={!!err[k]} value={f[k]} onChange={set(k)} />
-                      {err[k] && <p role="alert" className="pt-1 text-sm text-navy/70">↳ {err[k]}</p>}
-                    </div>
-                  ))}
-                  <div>
-                    <textarea className="field min-h-36 resize-none" placeholder="Your message" aria-label="Your message" aria-invalid={!!err.message} value={f.message} onChange={set("message")} />
-                    {err.message && <p role="alert" className="pt-1 text-sm text-navy/70">↳ {err.message}</p>}
-                  </div>
-                </div>
-                <button className="mt-8 flex w-full items-center justify-between bg-navy px-6 py-4 text-sm font-semibold text-ice transition-colors hover:bg-blue">
-                  Send message <Arrow />
-                </button>
-              </form>
-            )}
+          <div id="advertise" className="mt-12 scroll-mt-28 border-t-[3px] border-navy pt-5">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-navy/60">Advertising enquiries</p>
+            <h2 className="mt-2 font-display text-3xl font-semibold tracking-[-0.02em]">Advertise with us</h2>
+            <p className="mt-3 text-navy/75">
+              Reach readers who come for the news and stay for the writing. Choose "Advertising" in the form and tell us about your brand, budget and dates.
+            </p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="bg-warm px-4 py-12 md:px-10 lg:py-20">
+        <div className="mx-auto max-w-lg">
+          {status === 'done' ? (
+            <div>
+              <span className="mb-6 grid h-14 w-14 place-items-center rounded-full bg-navy text-paper"><Check className="h-7 w-7" /></span>
+              <h2 className="font-display text-5xl font-semibold tracking-[-0.03em]">Message sent.</h2>
+              <p className="mt-4 text-lg text-navy/75">Thanks, {form.name.split(' ')[0]}. I'll get back to you soon.</p>
+              <button type="button" onClick={() => { setStatus('idle'); setForm({ name: '', email: '', message: '', topic: topics[0] }); }}
+                className="link-u mt-8 text-sm font-semibold">Send another</button>
+            </div>
+          ) : (
+            <form onSubmit={submit} noValidate className="space-y-8">
+              <div>
+                <span className={label}>What's it about?</span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {topics.map((t) => (
+                    <label key={t} className="cursor-pointer">
+                      <input type="radio" name="topic" value={t} checked={form.topic === t} onChange={set('topic')} className="peer sr-only" />
+                      <span className="inline-block rounded-full border border-navy/25 px-4 py-2 text-sm font-semibold transition peer-checked:border-navy peer-checked:bg-navy peer-checked:text-paper peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-blue">
+                        {t}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <label className="block">
+                <span className={label}>Your name</span>
+                <input value={form.name} onChange={set('name')} autoComplete="name" className={field} />
+                {errors.name && <span role="alert" className="mt-1 block text-sm text-coral">{errors.name}</span>}
+              </label>
+              <label className="block">
+                <span className={label}>Email</span>
+                <input type="email" value={form.email} onChange={set('email')} autoComplete="email" className={field} />
+                {errors.email && <span role="alert" className="mt-1 block text-sm text-coral">{errors.email}</span>}
+              </label>
+              <label className="block">
+                <span className={label}>Message</span>
+                <textarea value={form.message} onChange={set('message')} rows={5} className={`${field} resize-none`} />
+                {errors.message && <span role="alert" className="mt-1 block text-sm text-coral">{errors.message}</span>}
+              </label>
+              <button type="submit" disabled={status === 'busy'}
+                className="w-full rounded-full bg-navy py-4 text-sm font-semibold text-paper transition hover:bg-blue disabled:opacity-60 sm:w-auto sm:px-10">
+                {status === 'busy' ? 'Sending…' : 'Send message'}
+              </button>
+            </form>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }

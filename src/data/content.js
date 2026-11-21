@@ -3,13 +3,12 @@
 // Image paths point to /public/images/*. Until a photo exists, <Img> shows an art-directed illustration.
 
 export const NAV = [
-  { to: "/destinations", label: "Destinations" },
-  { to: "/guides", label: "Guides" },
-  { to: "/stories", label: "Stories" },
-  { to: "/technology", label: "Technology" },
-  { to: "/about", label: "About" },
+  { to: "/destinations", label: "Travel" },
+  { to: "/guides", label: "Events" },
+  { to: "/stories", label: "Entertainment" },
+  { to: "/technology", label: "Tech" },
+  { to: "/about", label: "News" },
 ];
-
 export const REGIONS = [
   "North Africa",
   "West Africa",

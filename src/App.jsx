@@ -1,69 +1,44 @@
+// src/App.jsx
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { StoriesProvider } from './context/StoriesContext';
+import Topbar from './components/Topbar';
+import Navbar from './components/Navbar';
+import Stories from './pages/Stories';
+import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
+import Home from './pages/Home';
+import CategoryPage from './pages/CategoryPage';
+import Events from './pages/Events';
+import Tech from './pages/Tech';
+import Contact from './pages/Contact';
+import Article from './pages/Article';
+import NotFound from './pages/NotFound';
 
-import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router";
-import Navbar from "./components/Navbar.jsx";
-import Footer from "./components/Footer.jsx";
-import Home from "./pages/Home.jsx";
-import Destinations from "./pages/Destinations.jsx";
-import DestinationDetails from "./pages/DestinationDetails.jsx";
-import Guides from "./pages/Guides.jsx";
-import Stories from "./pages/Stories.jsx";
-import ArticleDetail from "./pages/ArticleDetail.jsx";
-import Technology from "./pages/Technology.jsx";
-import About from "./pages/About.jsx";
-import Contact from "./pages/Contact.jsx";
-import Search from "./pages/Search.jsx";
-import NotFound from "./pages/NotFound.jsx";
-
-function ScrollManager() {
-  const { pathname, hash } = useLocation();
-
-  useEffect(() => {
-    if (hash) {
-      const t = setTimeout(() => {
-        document.querySelector(hash)?.scrollIntoView({
-          behavior: "smooth",
-        });
-      }, 150);
-
-      return () => clearTimeout(t);
-    }
-
-    window.scrollTo(0, 0);
-  }, [pathname, hash]);
-
-  return null;
-}
-
-function Shell() {
+export default function App() {
   const { pathname } = useLocation();
-
   return (
-    <>
-      <ScrollManager />
+    <StoriesProvider>
+      <ScrollToTop />
+      <Topbar />
       <Navbar />
-
-      <main key={pathname} className="animate-page">
+      <main key={pathname} className="page-enter">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/destinations" element={<Destinations />} />
-          <Route path="/destinations/:slug" element={<DestinationDetails />} />
-          <Route path="/guides" element={<Guides />} />
           <Route path="/stories" element={<Stories />} />
-          <Route path="/stories/:slug" element={<ArticleDetail />} />
-          <Route path="/technology" element={<Technology />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/nigerian-news" element={<CategoryPage section="nigeria" />} />
+          <Route path="/world-news" element={<CategoryPage section="world" />} />
+          <Route path="/politics" element={<CategoryPage section="politics" />} />
+          <Route path="/entertainment" element={<CategoryPage section="entertainment" />} />
+          <Route path="/lifestyle" element={<CategoryPage section="lifestyle" />} />
+          <Route path="/sports" element={<CategoryPage section="sports" />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/tech" element={<Tech />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/search" element={<Search />} />
+          <Route path="/article/:slug" element={<Article />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-
       <Footer />
-    </>
+    </StoriesProvider>
   );
-}
-
-export default function App() {
-  return <Shell />;
 }

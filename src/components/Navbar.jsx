@@ -1,173 +1,127 @@
 // src/components/Navbar.jsx
-import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router";
-import { NAV, pad } from "../data/content.js";
-import { Arrow, Label } from "./Ui.jsx";
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { nav, moreNav, socials } from '../data/site';
+import { Chevron } from './Icons';
 
-export function Wordmark({ className = "" }) {
+const linkCls = (active) =>
+  `relative py-2 text-[12px] font-semibold uppercase tracking-[0.1em] transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:origin-left after:bg-navy after:transition-transform after:duration-300 ${
+    active ? 'text-navy after:scale-x-100' : 'text-navy/65 hover:text-navy after:scale-x-0 hover:after:scale-x-100'
+  }`;
+
+function More() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const { pathname } = useLocation();
+  const active = moreNav.some((n) => pathname.startsWith(n.to));
+
+  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
   return (
-    <span className={`display inline-flex items-baseline gap-[0.18em] text-[1.9rem] leading-none ${className}`}>
-    Sammy Iria's <em className="italic">Blog</em>
-      <span className="mb-[0.1em] inline-block h-1.5 w-1.5 rounded-full bg-blue" />
-    </span>
+    <div ref={ref} className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)}
+        className={`inline-flex items-center gap-1 ${linkCls(active)}`}>
+        More <Chevron className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <div className={`absolute right-0 top-full w-44 pt-3 transition-all duration-300 ${open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0'}`}>
+        <ul className="border border-navy/15 bg-warm p-2 shadow-xl">
+          {moreNav.map((n) => (
+            <li key={n.to}>
+              <NavLink to={n.to}
+                className={({ isActive }) => `block px-3 py-2 text-sm font-semibold transition-colors hover:bg-ice/60 ${isActive ? 'text-navy' : 'text-navy/70'}`}>
+                {n.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
-const POPULAR = ["Lagos", "Safari", "Fintech", "Packing", "Dunes"];
-
 export default function Navbar() {
+  const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
-  const [menu, setMenu] = useState(false);
-  const [search, setSearch] = useState(false);
-  const [q, setQ] = useState("");
 
-  const heroPage = pathname === "/" || pathname.startsWith("/destinations/");
-  const light = heroPage && !scrolled && !menu && !search;
-
+  useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 24);
-    on();
-    window.addEventListener("scroll", on, { passive: true });
-    return () => window.removeEventListener("scroll", on);
-  }, []);
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
 
-  useEffect(() => {
-    setMenu(false);
-    setSearch(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    document.body.style.overflow = menu || search ? "hidden" : "";
-    const onKey = (e) => e.key === "Escape" && (setMenu(false), setSearch(false));
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [menu, search]);
-
-  const go = (term) => {
-    const t = term.trim();
-    if (!t) return;
-    navigate(`/search?q=${encodeURIComponent(t)}`);
-    setQ("");
-  };
-  const submit = (e) => {
-    e.preventDefault();
-    go(q);
+  const goNewsletter = () => {
+    setOpen(false);
+    if (pathname === '/') document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' });
+    else navigate('/', { state: { scrollTo: 'newsletter' } });
   };
 
-  const ink = light || menu ? "text-ice" : "text-navy";
-  const solid = scrolled && !menu && !search;
+  const all = [...nav, ...moreNav];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      {/* Bar */}
-      <div className={`relative z-10 transition-colors duration-500 ${solid ? "border-b border-navy/10 bg-ice/95" : "border-b border-transparent"} ${ink}`}>
-        <div className="wrap flex h-16 items-center justify-between lg:h-20">
-          <Link to="/" aria-label="Sammy Iria's Blog home"><Wordmark /></Link>
+    <>
+      <header className="sticky top-0 z-50 border-b border-navy/15 bg-paper/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 md:px-10">
+          <Link to="/" className="flex items-baseline gap-2.5 text-navy">
+            <span className="font-display text-[1.7rem] font-semibold leading-none tracking-[-0.03em]">Sammy Iria</span>
+            <span className="hidden font-mono text-[10px] uppercase tracking-[0.25em] text-navy/60 sm:inline">The Blog</span>
+          </Link>
 
-          <nav className="hidden items-center gap-9 lg:flex" aria-label="Primary">
-            {NAV.map((l) => (
-              <NavLink key={l.to} to={l.to} className="link-u pb-1 text-[0.92rem] font-medium">
-                {l.label}
+          <nav className="hidden items-center gap-6 xl:flex" aria-label="Main">
+            {nav.map((n) => (
+              <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => linkCls(isActive)}>
+                {n.label}
               </NavLink>
             ))}
+            <More />
           </nav>
 
-          <div className="flex items-center gap-3 sm:gap-5">
-            <button onClick={() => { setSearch(!search); setMenu(false); }} aria-label="Search" className="p-2">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" strokeLinecap="round" />
-              </svg>
-            </button>
-            <Link
-              to="/#letter"
-              className={`hidden border px-5 py-2.5 text-sm font-semibold transition-colors duration-300 sm:block ${
-                light || menu ? "border-ice/60 hover:bg-ice hover:text-navy" : "border-navy hover:bg-navy hover:text-ice"
-              }`}
-            >
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={goNewsletter}
+              className="hidden rounded-full bg-navy px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-paper transition hover:bg-blue 2xl:block">
               Subscribe
-            </Link>
-            <button
-              onClick={() => { setMenu(!menu); setSearch(false); }}
-              aria-expanded={menu}
-              aria-label="Menu"
-              className="flex h-10 w-10 flex-col items-center justify-center gap-[7px] lg:hidden"
-            >
-              <span className={`h-px w-6 bg-current transition-transform duration-500 ${menu ? "translate-y-[4px] rotate-45" : ""}`} />
-              <span className={`h-px w-6 bg-current transition-transform duration-500 ${menu ? "-translate-y-[4px] -rotate-45" : ""}`} />
+            </button>
+            <button type="button" onClick={() => setOpen((o) => !o)} aria-label={open ? 'Close menu' : 'Open menu'}
+              aria-expanded={open} className="grid h-11 w-11 place-items-center xl:hidden">
+              <span className="relative block h-3 w-6">
+                <span className={`absolute left-0 top-0 h-0.5 w-full bg-navy transition-transform duration-500 ${open ? 'translate-y-[5px] rotate-45' : ''}`} />
+                <span className={`absolute bottom-0 left-0 h-0.5 w-full bg-navy transition-transform duration-500 ${open ? '-translate-y-[5px] -rotate-45' : ''}`} />
+              </span>
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Search sheet */}
-      <div
-        onClick={() => setSearch(false)}
-        className={`fixed inset-0 bg-navy/50 transition-opacity duration-500 ${search ? "opacity-100" : "pointer-events-none opacity-0"}`}
-      />
-      <div
-        className={`fixed inset-x-0 top-0 bg-white pb-12 pt-28 text-navy transition-transform duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] ${search ? "translate-y-0" : "-translate-y-full"}`}
-      >
-        <form onSubmit={submit} className="wrap">
-          <Label className="text-blue">Search Sammy Iria's Blog</Label>
-          <div className="mt-4 flex items-end gap-4 border-b border-navy">
-            <input
-              autoFocus={search}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="A place, a story, a guide…"
-              aria-label="Search"
-              className="display w-full bg-transparent py-3 text-[clamp(2rem,6vw,4.5rem)] placeholder:text-navy/25 focus:outline-none"
-            />
-            <button className="mb-4 hidden items-center gap-2 text-sm font-semibold sm:flex">Search <Arrow /></button>
-          </div>
-          <div className="mt-6 flex flex-wrap items-center gap-2">
-            <Label className="mr-2 text-navy/50">Popular</Label>
-            {POPULAR.map((p) => (
-              <button type="button" key={p} onClick={() => go(p)} className="border border-navy/20 px-3 py-1.5 text-sm transition-colors hover:border-navy hover:bg-navy hover:text-ice">
-                {p}
-              </button>
-            ))}
-          </div>
-        </form>
-      </div>
-
-      {/* Mobile menu */}
-      <div
-        aria-hidden={!menu}
-        className="fixed inset-0 bg-navy text-ice transition-[clip-path] duration-[900ms] ease-[cubic-bezier(0.7,0,0.2,1)] lg:hidden"
-        style={{ clipPath: menu ? "circle(150% at calc(100% - 2.5rem) 2rem)" : "circle(0% at calc(100% - 2.5rem) 2rem)" }}
-      >
-        <div className="wrap flex h-full flex-col justify-between pb-8 pt-28">
-          <nav className="flex flex-col" aria-label="Mobile">
-            {[...NAV, { to: "/contact", label: "Contact" }].map((l, i) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                tabIndex={menu ? 0 : -1}
-                style={{ transitionDelay: menu ? `${350 + i * 70}ms` : "0ms" }}
-                className={`group flex items-baseline gap-4 border-b border-ice/15 py-3 transition-all duration-700 ${menu ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
-              >
-                <Label className="text-blue">{pad(i + 1)}</Label>
-                <span className="display text-[2.8rem] transition-transform duration-500 group-hover:translate-x-2">{l.label}</span>
-              </Link>
+      {/* Mobile menu (sibling of the header so the blur doesn't trap the fixed overlay) */}
+      <div className={`menu-overlay fixed inset-0 z-40 h-[100dvh] overflow-y-auto bg-paper text-navy xl:hidden ${open ? 'open' : ''}`} aria-hidden={!open}>
+        <div className="flex min-h-full flex-col px-5 pb-10 pt-32">
+          <nav className="flex flex-1 flex-col justify-center" aria-label="Mobile">
+            {all.map((n, i) => (
+              <NavLink key={n.to} to={n.to} end={n.to === '/'} tabIndex={open ? 0 : -1}
+                style={{ transitionDelay: open ? `${220 + i * 55}ms` : '0ms' }}
+                className={({ isActive }) =>
+                  `menu-link flex items-baseline gap-4 border-b border-navy/15 py-2.5 font-display text-[2.1rem] font-semibold leading-none tracking-tight ${isActive ? 'text-blue' : ''}`}>
+                <span className="font-mono text-xs font-normal text-navy/50">{String(i + 1).padStart(2, '0')}</span>
+                {n.label}
+              </NavLink>
             ))}
           </nav>
-          <div className={`transition-opacity delay-700 duration-700 ${menu ? "opacity-100" : "opacity-0"}`}>
-            <Link to="/#letter" tabIndex={menu ? 0 : -1} className="mb-6 flex items-center justify-between border border-ice/40 px-5 py-4 text-sm font-semibold">
-              Subscribe to the Thursday Dispatch <Arrow />
-            </Link>
-            <div className="flex items-center justify-between text-ice/60">
-              <Label>6.52° N · 3.38° E</Label>
-              <Label>Issue 07</Label>
+          <div className="menu-link mt-8" style={{ transitionDelay: open ? '800ms' : '0ms' }}>
+            <button type="button" onClick={goNewsletter} className="w-full rounded-full bg-navy py-4 text-sm font-semibold text-paper">
+              Subscribe to the Sunday Letter
+            </button>
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-widest text-navy/60">
+              {socials.map((s) => (<span key={s.key}>{s.label}</span>))}
             </div>
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }
